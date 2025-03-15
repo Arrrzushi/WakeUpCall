@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { getContacts, requestContactsPermission } from "@/lib/contacts";
 
 const weekDays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
@@ -48,6 +49,25 @@ export default function CreateAlarm() {
       });
     }
   });
+
+  const handleSelectContact = async () => {
+    const hasPermission = await requestContactsPermission();
+    if (!hasPermission) {
+      toast({
+        title: "Contacts Not Available",
+        description: "This feature requires contact permissions and may not be supported in all browsers.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const contacts = await getContacts();
+    if (contacts.length > 0) {
+      const contact = contacts[0]; // User selected contact
+      form.setValue('callerName', contact.name);
+      form.setValue('callerNumber', contact.tel);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -117,9 +137,18 @@ export default function CreateAlarm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Caller Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Unknown Caller" />
-                    </FormControl>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input {...field} placeholder="Unknown Caller" />
+                      </FormControl>
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={handleSelectContact}
+                      >
+                        Pick Contact
+                      </Button>
+                    </div>
                   </FormItem>
                 )}
               />
