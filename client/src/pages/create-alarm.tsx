@@ -16,13 +16,13 @@ const weekDays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 export default function CreateAlarm() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  
+
   const form = useForm<InsertAlarm>({
     resolver: zodResolver(insertAlarmSchema),
     defaultValues: {
       label: "",
       time: "08:00",
-      repeatDays: [],
+      repeatDays: ["MON", "TUE", "WED", "THU", "FRI"],
       active: true,
       callerName: "Unknown",
       callerNumber: "+1234567890",
@@ -70,7 +70,7 @@ export default function CreateAlarm() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="time"
@@ -80,6 +80,33 @@ export default function CreateAlarm() {
                     <FormControl>
                       <Input type="time" {...field} />
                     </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="repeatDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Repeat Days</FormLabel>
+                    <div className="flex gap-2 flex-wrap">
+                      {weekDays.map((day) => (
+                        <Button
+                          key={day}
+                          type="button"
+                          variant={field.value.includes(day) ? "default" : "outline"}
+                          onClick={() => {
+                            const newDays = field.value.includes(day)
+                              ? field.value.filter(d => d !== day)
+                              : [...field.value, day];
+                            field.onChange(newDays);
+                          }}
+                        >
+                          {day}
+                        </Button>
+                      ))}
+                    </div>
                   </FormItem>
                 )}
               />

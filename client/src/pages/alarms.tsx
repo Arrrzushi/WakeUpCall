@@ -2,13 +2,55 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import AlarmList from "@/components/alarm-list";
+import MockCall from "@/components/mock-call";
 import { PlusCircle } from "lucide-react";
 import { Alarm } from "@shared/schema";
+import { alarmManager } from "@/lib/alarmManager";
+import { ringtonePlayer } from "@/lib/audio";
+import { useEffect, useState } from "react";
+import { requestNotificationPermission } from "@/lib/notifications";
 
 export default function Alarms() {
+  const [currentAlarm, setCurrentAlarm] = useState<Alarm | null>(null);
+
   const { data: alarms, isLoading } = useQuery<Alarm[]>({ 
     queryKey: ['/api/alarms']
   });
+
+  useEffect(() => {
+    // Request notification permission on mount
+    requestNotificationPermission();
+
+    // Start alarm manager
+    alarmManager.start();
+
+    // Update alarms in manager when they change
+    if (alarms) {
+      alarmManager.setAlarms(alarms);
+    }
+
+    // Listen for alarm triggers
+    const handleAlarmTrigger = (event: CustomEvent<Alarm>) => {
+      setCurrentAlarm(event.detail);
+    };
+
+    window.addEventListener('alarmTriggered', handleAlarmTrigger as EventListener);
+
+    return () => {
+      alarmManager.stop();
+      window.removeEventListener('alarmTriggered', handleAlarmTrigger as EventListener);
+    };
+  }, [alarms]);
+
+  const handleAnswerCall = () => {
+    ringtonePlayer.stop();
+    setCurrentAlarm(null);
+  };
+
+  const handleDeclineCall = () => {
+    ringtonePlayer.stop();
+    setCurrentAlarm(null);
+  };
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -22,7 +64,7 @@ export default function Alarms() {
             </Button>
           </Link>
         </div>
-        
+
         {isLoading ? (
           <div className="flex justify-center">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -31,6 +73,14 @@ export default function Alarms() {
           <AlarmList alarms={alarms || []} />
         )}
       </div>
+
+      {currentAlarm && (
+        <MockCall 
+          alarm={currentAlarm}
+          onAnswer={handleAnswerCall}
+          onDecline={handleDeclineCall}
+        />
+      )}
     </div>
   );
 }
