@@ -1,4 +1,5 @@
 🌟 WakeUpCall 🌟
+
 Welcome to WakeUpCall – the alarm app that’s anything but boring! 🎉
 Tired of the same old beep-beep alarm sounds? Want to spice up your mornings (or escape awkward situations)? Well, you’ve come to the right place!
 
