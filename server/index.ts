@@ -55,12 +55,10 @@ app.use((req, res, next) => {
             serveStatic(app);
         }
 
-        // Set up the server port and host
+        // ✅ Fix: Bind to 0.0.0.0 for Render
         const PORT = process.env.PORT || 5000;
-        const HOST = "127.0.0.1"; // Changed from 0.0.0.0
-
-        server.listen(PORT, HOST, () => {
-            log(`🚀 Server running on http://${HOST}:${PORT}`);
+        server.listen(PORT, "0.0.0.0", () => {
+            log(`🚀 Server running on http://0.0.0.0:${PORT}`);
         });
 
     } catch (error) {
